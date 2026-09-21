@@ -1,0 +1,43 @@
+package edu.vt.hokiehousing;
+
+import java.util.Objects;
+
+/** Represents one resident review. */
+public class Review {
+    public static final int MAX_DESCRIPTION_LENGTH = 500;
+
+    private final int rating;
+    private final String description;
+
+    public Review(int rating, String description) {
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("Review rating must be between 1 and 5.");
+        }
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException("Review description cannot be blank.");
+        }
+        String cleaned = description.trim();
+        if (cleaned.length() > MAX_DESCRIPTION_LENGTH) {
+            throw new IllegalArgumentException("Review description cannot exceed 500 characters.");
+        }
+        this.rating = rating;
+        this.description = cleaned;
+    }
+
+    public int getRating() { return rating; }
+    public String getDescription() { return description; }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) { return true; }
+        if (!(object instanceof Review other)) { return false; }
+        return rating == other.rating
+            && description.equalsIgnoreCase(other.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(rating, description.toLowerCase());
+    }
+}
+
