@@ -1,0 +1,45 @@
+package edu.vt.hokiehousing;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class PropertyDatabaseTest {
+    private PropertyDatabase database;
+
+    @BeforeEach
+    void setUp() {
+        database = new PropertyDatabase();
+        database.addProperty(TestData.property("Alpha Apartments", 800, 0.5));
+        database.addProperty(TestData.property("Beta Place", 1100, 2.0));
+    }
+
+    @Test
+    void addPropertyAcceptsValidAndRejectsNullOrDuplicate() {
+        assertTrue(database.addProperty(TestData.property("Gamma Homes", 900, 1.0)));
+        assertFalse(database.addProperty(null));
+        assertFalse(database.addProperty(TestData.property("alpha apartments", 999, 4.0)));
+        assertEquals(3, database.getAllProperties().size());
+    }
+
+    @Test
+    void searchByNameIgnoresCaseAndRejectsBadSearches() {
+        assertEquals("Alpha Apartments", database.searchByName("ALPHA APARTMENTS").getName());
+        assertNull(database.searchByName("Fake Apartments"));
+        assertNull(database.searchByName("   "));
+    }
+
+    @Test
+    void filterByRentReturnsMatchesAndRejectsReversedRange() {
+        assertEquals(1, database.filterByRent(750, 900).size());
+        assertThrows(IllegalArgumentException.class,
+            () -> database.filterByRent(1200, 800));
+    }
+
+    @Test
+    void filterByDistanceReturnsMatchesAndRejectsNegativeDistance() {
+        assertEquals(1, database.filterByDistance(1.0).size());
+        assertThrows(IllegalArgumentException.class,
+            () -> database.filterByDistance(-1));
+    }
+}
