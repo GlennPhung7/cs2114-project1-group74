@@ -1,0 +1,53 @@
+package edu.vt.hokiehousing;
+
+/** Stores ownership and landlord information for one property. */
+public class LandlordReport {
+    public static final double UNKNOWN_RATING = -1.0;
+
+    private final String companyName;
+    private final String ownershipType;
+    private final double maintenanceRating;
+    private final double communicationRating;
+    private final double feeRating;
+    private final double overallRating;
+    private final String ownershipStatus;
+    private final String ownershipSource;
+
+    public LandlordReport(String companyName, String ownershipType,
+        double maintenanceRating, double communicationRating,
+        double feeRating, double overallRating, String ownershipStatus,
+        String ownershipSource) {
+        this.companyName = clean(companyName);
+        this.ownershipType = clean(ownershipType);
+        this.maintenanceRating = validateRating(maintenanceRating);
+        this.communicationRating = validateRating(communicationRating);
+        this.feeRating = validateRating(feeRating);
+        this.overallRating = validateRating(overallRating);
+        this.ownershipStatus = clean(ownershipStatus);
+        this.ownershipSource = clean(ownershipSource);
+    }
+
+    private double validateRating(double value) {
+        if (value != UNKNOWN_RATING && (value < 1.0 || value > 5.0)) {
+            throw new IllegalArgumentException("Ratings must be 1 through 5, or -1 for Unknown.");
+        }
+        return value;
+    }
+
+    private String clean(String value) {
+        return value == null || value.isBlank() ? "Unknown" : value.trim();
+    }
+
+    public String getCompanyName() { return companyName; }
+    public String getOwnershipType() { return ownershipType; }
+    public double getMaintenanceRating() { return maintenanceRating; }
+    public double getCommunicationRating() { return communicationRating; }
+    public double getFeeRating() { return feeRating; }
+    public double getOverallRating() { return overallRating; }
+    public String getOwnershipStatus() { return ownershipStatus; }
+    public String getOwnershipSource() { return ownershipSource; }
+
+    public static String displayRating(double rating) {
+        return rating == UNKNOWN_RATING ? "Unknown" : String.format("%.1f/5", rating);
+    }
+}
