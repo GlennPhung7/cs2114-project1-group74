@@ -1,0 +1,30 @@
+package edu.vt.hokiehousing;
+
+import static org.junit.jupiter.api.Assertions.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import org.junit.jupiter.api.Test;
+
+class HousingDataLoaderTest {
+    private static final String HEADER = "name,address,monthlyRent,distanceMiles,walkingMinutes,drivingMinutes,busMinutes,downtownMinutes,groceryMinutes,nearbyBusStop,companyName,ownershipType,maintenanceRating,communicationRating,feeRating,overallRating,ownershipStatus,ownershipSource,dataSource,verifiedDate\n";
+
+    @Test
+    void loadReadsValidCsv() throws IOException {
+        String row = "Test Place,100 Main St,900,1.2,20,5,10,8,7,Main Stop,Manager,Corporate,4,4,3,4,Confirmed,County,https://example.com,2026-09-21\n";
+        PropertyDatabase database = HousingDataLoader.load(stream(HEADER + row));
+        assertEquals(1, database.getAllProperties().size());
+        assertEquals(900, database.searchByName("Test Place").getMonthlyRent());
+    }
+
+    @Test
+    void loadRejectsMalformedCsv() {
+        assertThrows(IOException.class,
+            () -> HousingDataLoader.load(stream(HEADER + "Too,Few,Columns\n")));
+        assertThrows(IllegalArgumentException.class, () -> HousingDataLoader.load(null));
+    }
+
+    private ByteArrayInputStream stream(String text) {
+        return new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
+    }
+}
