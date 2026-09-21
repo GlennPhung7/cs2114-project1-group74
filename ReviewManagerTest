@@ -1,0 +1,30 @@
+package edu.vt.hokiehousing;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+class ReviewManagerTest {
+    @Test
+    void addReviewCalculatesAverage() {
+        ReviewManager manager = new ReviewManager();
+        assertTrue(manager.addReview(new Review(5, "Good")));
+        assertTrue(manager.addReview(new Review(3, "Okay")));
+        assertEquals(4.0, manager.calculateAverageRating(), 0.001);
+    }
+
+    @Test
+    void addReviewRejectsDuplicateAndNull() {
+        ReviewManager manager = new ReviewManager();
+        Review review = new Review(4, "Helpful staff");
+        assertTrue(manager.addReview(review));
+        assertFalse(manager.addReview(new Review(4, "HELPFUL STAFF")));
+        assertFalse(manager.addReview(null));
+        assertThrows(UnsupportedOperationException.class,
+            () -> manager.getReviews().add(new Review(1, "Cannot add directly")));
+    }
+
+    @Test
+    void emptyManagerReturnsZeroAverage() {
+        assertEquals(0.0, new ReviewManager().calculateAverageRating(), 0.001);
+    }
+}
