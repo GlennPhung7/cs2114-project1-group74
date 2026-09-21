@@ -1,0 +1,42 @@
+package edu.vt.hokiehousing;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+class ValueObjectTest {
+    @Test
+    void travelInfoReturnsValuesAndDisplaysUnknown() {
+        TravelInfo travel = new TravelInfo(12, -1, 9, 5, 4, null);
+        assertEquals(12, travel.getWalkingMinutes());
+        assertEquals("Unknown", TravelInfo.displayMinutes(travel.getDrivingMinutes()));
+        assertEquals("Unknown", travel.getNearbyBusStop());
+    }
+
+    @Test
+    void travelInfoRejectsInvalidNegativeTime() {
+        assertThrows(IllegalArgumentException.class,
+            () -> new TravelInfo(-2, 1, 1, 1, 1, "Stop"));
+    }
+
+    @Test
+    void landlordReportReturnsValuesAndRejectsBadRating() {
+        LandlordReport report = new LandlordReport("Company", "Corporate",
+            4, 3, -1, 3.5, "Confirmed", "Source");
+        assertEquals("Company", report.getCompanyName());
+        assertEquals("Unknown", LandlordReport.displayRating(report.getFeeRating()));
+        assertThrows(IllegalArgumentException.class, () -> new LandlordReport(
+            "Company", "Corporate", 6, 3, 3, 3, "Confirmed", "Source"));
+    }
+
+    @Test
+    void propertyUsesUnknownForMissingTextAndRejectsMissingName() {
+        Property property = new Property("Test", null, -1, -1,
+            new TravelInfo(-1, -1, -1, -1, -1, null),
+            new LandlordReport(null, null, -1, -1, -1, -1, null, null),
+            null, null);
+        assertEquals("Unknown", property.getAddress());
+        assertEquals("Unknown", Property.displayMoney(property.getMonthlyRent()));
+        assertThrows(IllegalArgumentException.class, () -> new Property(" ", "Address",
+            1, 1, property.getTravelInfo(), property.getLandlordReport(), "Source", "Date"));
+    }
+}
