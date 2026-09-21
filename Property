@@ -1,0 +1,61 @@
+package edu.vt.hokiehousing;
+
+/** Represents one apartment complex or housing community. */
+public class Property {
+    public static final double UNKNOWN_NUMBER = -1.0;
+
+    private final String name;
+    private final String address;
+    private final double monthlyRent;
+    private final double distanceFromCampus;
+    private final TravelInfo travelInfo;
+    private final LandlordReport landlordReport;
+    private final ReviewManager reviewManager;
+    private final String dataSource;
+    private final String verifiedDate;
+
+    public Property(String name, String address, double monthlyRent,
+        double distanceFromCampus, TravelInfo travelInfo,
+        LandlordReport landlordReport, String dataSource, String verifiedDate) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Property name is required.");
+        }
+        if (monthlyRent < UNKNOWN_NUMBER || distanceFromCampus < UNKNOWN_NUMBER) {
+            throw new IllegalArgumentException("Rent and distance cannot be below -1.");
+        }
+        if (travelInfo == null || landlordReport == null) {
+            throw new IllegalArgumentException("Travel and landlord information are required.");
+        }
+        this.name = name.trim();
+        this.address = clean(address);
+        this.monthlyRent = monthlyRent;
+        this.distanceFromCampus = distanceFromCampus;
+        this.travelInfo = travelInfo;
+        this.landlordReport = landlordReport;
+        this.reviewManager = new ReviewManager();
+        this.dataSource = clean(dataSource);
+        this.verifiedDate = clean(verifiedDate);
+    }
+
+    private String clean(String value) {
+        return value == null || value.isBlank() ? "Unknown" : value.trim();
+    }
+
+    public String getName() { return name; }
+    public String getAddress() { return address; }
+    public double getMonthlyRent() { return monthlyRent; }
+    public double getDistanceFromCampus() { return distanceFromCampus; }
+    public TravelInfo getTravelInfo() { return travelInfo; }
+    public LandlordReport getLandlordReport() { return landlordReport; }
+    public ReviewManager getReviewManager() { return reviewManager; }
+    public String getDataSource() { return dataSource; }
+    public String getVerifiedDate() { return verifiedDate; }
+
+    public static String displayMoney(double amount) {
+        return amount == UNKNOWN_NUMBER ? "Unknown" : String.format("$%.2f", amount);
+    }
+
+    public static String displayDistance(double miles) {
+        return miles == UNKNOWN_NUMBER ? "Unknown" : String.format("%.1f miles", miles);
+    }
+}
