@@ -1,0 +1,37 @@
+package edu.vt.hokiehousing;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/** Stores and summarizes reviews while the program is running. */
+public class ReviewManager {
+    private final List<Review> reviews = new ArrayList<>();
+
+    public boolean addReview(Review review) {
+        if (review == null || isDuplicate(review)) {
+            return false;
+        }
+        reviews.add(review);
+        return true;
+    }
+
+    public boolean isDuplicate(Review review) {
+        return review != null && reviews.contains(review);
+    }
+
+    public double calculateAverageRating() {
+        if (reviews.isEmpty()) {
+            return 0.0;
+        }
+        int total = 0;
+        for (Review review : reviews) {
+            total += review.getRating();
+        }
+        return (double)total / reviews.size();
+    }
+
+    public List<Review> getReviews() {
+        return Collections.unmodifiableList(reviews);
+    }
+}
