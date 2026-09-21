@@ -1,0 +1,13 @@
+package edu.vt.hokiehousing;
+
+final class TestData {
+    private TestData() { }
+
+    static Property property(String name, double rent, double distance) {
+        TravelInfo travel = new TravelInfo(10, 4, 8, 6, 5, "Test Stop");
+        LandlordReport landlord = new LandlordReport("Test Management", "Corporate",
+            4, 4, 3, 4, "Confirmed", "County record");
+        return new Property(name, "100 Main Street", rent, distance, travel,
+            landlord, "https://example.com", "2026-09-21");
+    }
+}
