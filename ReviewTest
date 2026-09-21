@@ -1,0 +1,19 @@
+package edu.vt.hokiehousing;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+class ReviewTest {
+    @Test
+    void constructorStoresValidReview() {
+        Review review = new Review(5, "  Great bus access.  ");
+        assertEquals(5, review.getRating());
+        assertEquals("Great bus access.", review.getDescription());
+    }
+
+    @Test
+    void constructorRejectsInvalidRatingAndBlankText() {
+        assertThrows(IllegalArgumentException.class, () -> new Review(0, "Bad"));
+        assertThrows(IllegalArgumentException.class, () -> new Review(3, "   "));
+    }
+}
