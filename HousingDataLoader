@@ -1,0 +1,72 @@
+package edu.vt.hokiehousing;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+
+/** Loads the separate CSV housing database bundled with the program. */
+public final class HousingDataLoader {
+    private static final int COLUMN_COUNT = 20;
+
+    private HousingDataLoader() { }
+
+    public static PropertyDatabase loadDefaultDatabase() throws IOException {
+        InputStream stream = HousingDataLoader.class.getResourceAsStream("/housing-data.csv");
+        if (stream == null) {
+            throw new IOException("Could not find housing-data.csv.");
+        }
+        return load(stream);
+    }
+
+    public static PropertyDatabase load(InputStream stream) throws IOException {
+        if (stream == null) {
+            throw new IllegalArgumentException("Data stream cannot be null.");
+        }
+        PropertyDatabase database = new PropertyDatabase();
+        try (BufferedReader reader = new BufferedReader(
+            new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            String line;
+            int lineNumber = 0;
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
+                if (lineNumber == 1 || line.isBlank() || line.startsWith("#")) {
+                    continue;
+                }
+                String[] fields = line.split(",", -1);
+                if (fields.length != COLUMN_COUNT) {
+                    throw new IOException("Invalid housing data on line " + lineNumber
+                        + ": expected " + COLUMN_COUNT + " columns.");
+                }
+                try {
+                    database.addProperty(toProperty(fields));
+                }
+                catch (IllegalArgumentException exception) {
+                    throw new IOException("Invalid housing data on line " + lineNumber
+                        + ": " + exception.getMessage(), exception);
+                }
+            }
+        }
+        return database;
+    }
+
+    private static Property toProperty(String[] f) {
+        TravelInfo travel = new TravelInfo(integer(f[4]), integer(f[5]), integer(f[6]),
+            integer(f[7]), integer(f[8]), f[9]);
+        LandlordReport landlord = new LandlordReport(f[10], f[11], decimal(f[12]),
+            decimal(f[13]), decimal(f[14]), decimal(f[15]), f[16], f[17]);
+        return new Property(f[0], f[1], decimal(f[2]), decimal(f[3]), travel,
+            landlord, f[18], f[19]);
+    }
+
+    private static double decimal(String value) {
+        return value.isBlank() || value.equalsIgnoreCase("Unknown")
+            ? -1.0 : Double.parseDouble(value.trim());
+    }
+
+    private static int integer(String value) {
+        return value.isBlank() || value.equalsIgnoreCase("Unknown")
+            ? -1 : Integer.parseInt(value.trim());
+    }
+}
