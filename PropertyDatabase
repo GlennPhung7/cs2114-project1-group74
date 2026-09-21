@@ -1,0 +1,66 @@
+package edu.vt.hokiehousing;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+/** Stores properties and performs searches and filters. */
+public class PropertyDatabase {
+    private final List<Property> properties = new ArrayList<>();
+
+    public boolean addProperty(Property property) {
+        if (property == null || searchByName(property.getName()) != null) {
+            return false;
+        }
+        properties.add(property);
+        return true;
+    }
+
+    public Property searchByName(String name) {
+        if (name == null || name.isBlank()) {
+            return null;
+        }
+        String target = name.trim();
+        for (Property property : properties) {
+            if (property.getName().equalsIgnoreCase(target)) {
+                return property;
+            }
+        }
+        return null;
+    }
+
+    public List<Property> filterByRent(double minRent, double maxRent) {
+        if (minRent < 0 || maxRent < 0 || minRent > maxRent) {
+            throw new IllegalArgumentException("Use a nonnegative range with minimum no greater than maximum.");
+        }
+        List<Property> matches = new ArrayList<>();
+        for (Property property : properties) {
+            double rent = property.getMonthlyRent();
+            if (rent != Property.UNKNOWN_NUMBER && rent >= minRent && rent <= maxRent) {
+                matches.add(property);
+            }
+        }
+        matches.sort(Comparator.comparingDouble(Property::getMonthlyRent));
+        return matches;
+    }
+
+    public List<Property> filterByDistance(double maxDistance) {
+        if (maxDistance < 0) {
+            throw new IllegalArgumentException("Distance cannot be negative.");
+        }
+        List<Property> matches = new ArrayList<>();
+        for (Property property : properties) {
+            double distance = property.getDistanceFromCampus();
+            if (distance != Property.UNKNOWN_NUMBER && distance <= maxDistance) {
+                matches.add(property);
+            }
+        }
+        matches.sort(Comparator.comparingDouble(Property::getDistanceFromCampus));
+        return matches;
+    }
+
+    public List<Property> getAllProperties() {
+        return Collections.unmodifiableList(properties);
+    }
+}
