@@ -1,1 +1,203 @@
+package edu.vt.hokiehousing;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.List;
+import java.util.Scanner;
+
+/** Console interface for the Hokie Housing Tool. */
+public class HousingApp {
+    private final PropertyDatabase database;
+    private final Scanner input;
+    private final PrintStream output;
+
+    public HousingApp(PropertyDatabase database, Scanner input, PrintStream output) {
+        if (database == null || input == null || output == null) {
+            throw new IllegalArgumentException("Database, input, and output are required.");
+        }
+        this.database = database;
+        this.input = input;
+        this.output = output;
+    }
+
+    public static void main(String[] args) {
+        try {
+            new HousingApp(HousingDataLoader.loadDefaultDatabase(),
+                new Scanner(System.in), System.out).run();
+        }
+        catch (IOException exception) {
+            System.err.println("The housing database could not be loaded: " + exception.getMessage());
+        }
+    }
+
+    public void run() {
+        output.println("Welcome to the Hokie Housing Tool!");
+        boolean running = true;
+        while (running && input.hasNextLine()) {
+            displayMainMenu();
+            int choice = getMenuChoice();
+            switch (choice) {
+                case 1 -> displayProperties(database.getAllProperties());
+                case 2 -> searchByName();
+                case 3 -> filterByRent();
+                case 4 -> filterByDistance();
+                case 5 -> addReview();
+                case 0 -> running = false;
+                default -> output.println("Please enter a menu number from 0 through 5.");
+            }
+        }
+        output.println("Thank you for using the Hokie Housing Tool.");
+    }
+
+    public void displayMainMenu() {
+        output.println("\n1. List all properties");
+        output.println("2. Search by exact property name");
+        output.println("3. Filter by monthly rent");
+        output.println("4. Filter by distance from campus");
+        output.println("5. Add a resident review");
+        output.println("0. Exit");
+        output.print("Choice: ");
+    }
+
+    public int getMenuChoice() {
+        String line = readLine();
+        try {
+            return Integer.parseInt(line.trim());
+        }
+        catch (NumberFormatException exception) {
+            return -1;
+        }
+    }
+
+    public void displayProperty(Property property) {
+        if (property == null) {
+            output.println("Property not found.");
+            return;
+        }
+        TravelInfo travel = property.getTravelInfo();
+        LandlordReport landlord = property.getLandlordReport();
+        output.println("\n--- " + property.getName() + " ---");
+        output.println("Address: " + property.getAddress());
+        output.println("Monthly rent: " + Property.displayMoney(property.getMonthlyRent()));
+        output.println("Distance from campus: " + Property.displayDistance(property.getDistanceFromCampus()));
+        output.println("Walk: " + TravelInfo.displayMinutes(travel.getWalkingMinutes()));
+        output.println("Drive: " + TravelInfo.displayMinutes(travel.getDrivingMinutes()));
+        output.println("Bus: " + TravelInfo.displayMinutes(travel.getBusMinutes()));
+        output.println("Downtown: " + TravelInfo.displayMinutes(travel.getDowntownMinutes()));
+        output.println("Grocery: " + TravelInfo.displayMinutes(travel.getGroceryMinutes()));
+        output.println("Nearby bus stop: " + travel.getNearbyBusStop());
+        output.println("Management: " + landlord.getCompanyName());
+        output.println("Ownership: " + landlord.getOwnershipType() + " (" + landlord.getOwnershipStatus() + ")");
+        output.println("Landlord overall rating: " + LandlordReport.displayRating(landlord.getOverallRating()));
+        displayReviews(property.getReviewManager());
+        output.println("Data checked: " + property.getVerifiedDate());
+        output.println("Source: " + property.getDataSource());
+    }
+
+    private void searchByName() {
+        output.print("Enter the exact property name: ");
+        String name = readLine();
+        if (name.isBlank()) {
+            output.println("Search cannot be blank.");
+            return;
+        }
+        displayProperty(database.searchByName(name));
+    }
+
+    private void filterByRent() {
+        Double min = readNonnegativeDouble("Minimum monthly rent: ");
+        Double max = readNonnegativeDouble("Maximum monthly rent: ");
+        if (min == null || max == null) { return; }
+        try {
+            displayProperties(database.filterByRent(min, max));
+        }
+        catch (IllegalArgumentException exception) {
+            output.println(exception.getMessage());
+        }
+    }
+
+    private void filterByDistance() {
+        Double max = readNonnegativeDouble("Maximum distance in miles: ");
+        if (max == null) { return; }
+        try {
+            displayProperties(database.filterByDistance(max));
+        }
+        catch (IllegalArgumentException exception) {
+            output.println(exception.getMessage());
+        }
+    }
+
+    private void addReview() {
+        output.print("Property name: ");
+        Property property = database.searchByName(readLine());
+        if (property == null) {
+            output.println("Property not found.");
+            return;
+        }
+        output.print("Rating (1-5): ");
+        int rating;
+        try {
+            rating = Integer.parseInt(readLine().trim());
+        }
+        catch (NumberFormatException exception) {
+            output.println("Rating must be a whole number from 1 through 5.");
+            return;
+        }
+        output.print("Review (1-500 characters): ");
+        String description = readLine();
+        try {
+            Review review = new Review(rating, description);
+            if (property.getReviewManager().addReview(review)) {
+                output.println("Review added.");
+            }
+            else {
+                output.println("That review already exists.");
+            }
+        }
+        catch (IllegalArgumentException exception) {
+            output.println(exception.getMessage());
+        }
+    }
+
+    private Double readNonnegativeDouble(String prompt) {
+        output.print(prompt);
+        try {
+            double value = Double.parseDouble(readLine().trim());
+            if (value < 0) {
+                output.println("Please enter a number that is zero or greater.");
+                return null;
+            }
+            return value;
+        }
+        catch (NumberFormatException exception) {
+            output.println("Please enter a valid number.");
+            return null;
+        }
+    }
+
+    private String readLine() {
+        return input.hasNextLine() ? input.nextLine() : "";
+    }
+
+    private void displayProperties(List<Property> properties) {
+        if (properties.isEmpty()) {
+            output.println("No matching properties found.");
+            return;
+        }
+        for (Property property : properties) {
+            displayProperty(property);
+        }
+    }
+
+    private void displayReviews(ReviewManager manager) {
+        if (manager.getReviews().isEmpty()) {
+            output.println("Reviews: No reviews yet");
+            return;
+        }
+        output.printf("Resident average: %.1f/5%n", manager.calculateAverageRating());
+        for (Review review : manager.getReviews()) {
+            output.println("  " + review.getRating() + "/5 - " + review.getDescription());
+        }
+    }
+}
 
