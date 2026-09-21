@@ -1,0 +1,45 @@
+package edu.vt.hokiehousing;
+
+/** Stores researched transportation information for one property. */
+public class TravelInfo {
+    public static final int UNKNOWN_TIME = -1;
+
+    private final int walkingMinutes;
+    private final int drivingMinutes;
+    private final int busMinutes;
+    private final int downtownMinutes;
+    private final int groceryMinutes;
+    private final String nearbyBusStop;
+
+    public TravelInfo(int walkingMinutes, int drivingMinutes, int busMinutes,
+        int downtownMinutes, int groceryMinutes, String nearbyBusStop) {
+        this.walkingMinutes = validateTime(walkingMinutes);
+        this.drivingMinutes = validateTime(drivingMinutes);
+        this.busMinutes = validateTime(busMinutes);
+        this.downtownMinutes = validateTime(downtownMinutes);
+        this.groceryMinutes = validateTime(groceryMinutes);
+        this.nearbyBusStop = clean(nearbyBusStop);
+    }
+
+    private int validateTime(int value) {
+        if (value < UNKNOWN_TIME) {
+            throw new IllegalArgumentException("Travel time cannot be below -1.");
+        }
+        return value;
+    }
+
+    private String clean(String value) {
+        return value == null || value.isBlank() ? "Unknown" : value.trim();
+    }
+
+    public int getWalkingMinutes() { return walkingMinutes; }
+    public int getDrivingMinutes() { return drivingMinutes; }
+    public int getBusMinutes() { return busMinutes; }
+    public int getDowntownMinutes() { return downtownMinutes; }
+    public int getGroceryMinutes() { return groceryMinutes; }
+    public String getNearbyBusStop() { return nearbyBusStop; }
+
+    public static String displayMinutes(int minutes) {
+        return minutes == UNKNOWN_TIME ? "Unknown" : minutes + " minutes";
+    }
+}
